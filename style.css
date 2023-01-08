@@ -1,0 +1,38 @@
+body {
+    margin: 0;
+    text-align: center;
+    background-color: #211e20;
+}
+
+h2,
+label {
+    color: #e9efec;
+}
+
+select,
+button {
+    background-color: #e9efec;
+    color: #211e20;
+    border: 1px solid #a0a08b;
+}
+
+select:focus,
+button:focus {
+    background-color: #211e20;
+    color: #e9efec;
+    border: 1px solid #a0a08b;
+
+    outline: none;
+}
+
+select:disabled,
+button:disabled {
+    background-color: #e9efec;
+    color: #a0a08b;
+    border: 1px solid #a0a08b;
+}
+
+hr {
+    margin: 20px 7%;
+    border: 1px solid #a0a08b;
+}
