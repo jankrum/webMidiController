@@ -17,6 +17,7 @@ select {
     background-color: #272422;
     color: #C8BCA2;
 
+    border-radius: 0;
     border: 1px solid #908674;
 
     cursor: pointer;
