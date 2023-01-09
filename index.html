@@ -8,16 +8,22 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Midi Controller</title>
-    <!-- <link rel="stylesheet" href="style.css"> -->
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
     <div class="connectionManager">
         <h2>Connect to an input and output</h2>
 
-        <select id="midiIn"></select>
+        <select id="midiIn">
+            <option value="loopMidi">Loop Midi</option>
+        </select>
 
-        <label>&rarr; This Webpage &rarr;</label>
+        <label class="wide">&rarr;</label>
+        <label class="thin">&darr;</label>
+        <label>This Webpage</label>
+        <label class="wide">&rarr;</label>
+        <label class="thin">&darr;</label>
 
         <select id="midiOut"></select>
 
@@ -26,7 +32,7 @@
 
     <hr>
 
-    <div class="case" style="visibility: hidden">
+    <div class="case" style="display: none">
         <div class="module">
             <label for="pot1">LOLOLOL</label>
             <input type="range" name="pot1" id="pot1" min="0" max="127">
