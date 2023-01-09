@@ -1,6 +1,8 @@
 body {
     padding-top: 1em;
+
     text-align: center;
+
     background-color: #393532;
 }
 
@@ -14,8 +16,6 @@ select {
 
     background-color: #272422;
     color: #C8BCA2;
-
-    border-radius: 0;
 
     cursor: pointer;
 }
@@ -34,6 +34,7 @@ button {
 select:focus,
 button:focus {
     outline: none;
+
     background-color: #9D511B;
     color: #272422;
 
@@ -72,6 +73,6 @@ button:focus {
 
 hr {
     margin: 20px 7%;
+
     border: 1px solid #4A453D;
-    background-color: #4A453D;
 }
