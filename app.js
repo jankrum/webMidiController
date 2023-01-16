@@ -89,7 +89,6 @@ async function useMidi() {
             const endOfStaticLabel = messageBytes.indexOf(0x00);
             const staticLabelBytes = messageBytes.slice(0, endOfStaticLabel);
             const staticLabel = String.fromCharCode(...staticLabelBytes);
-            console.log(staticLabel)
 
             label.innerHTML = staticLabel;
 
