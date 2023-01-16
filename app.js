@@ -1,61 +1,106 @@
-async function getMidi() {
-    const inputSelect = document.querySelector("#midiIn")
-    const outputSelect = document.querySelector("#midiOut")
+// Example SYSEX message: [0xF0, 0x01, 0x09, 0x54, 0x65, 0x6D, 0x70, 0x6F, 0x3A, 0x20, 0x00, 0x34, 0x30, 0x3A, 0x32, 0x32, 0x30, 0xF7]
 
-    const applyButton = document.querySelector("#apply")
+function buildController() {
+    const moduleCount = 12
+
+    const caseDiv = document.querySelector(".case");
+    const originalModule = caseDiv.querySelector("#module1");
+
+    for (let i = 2; i <= moduleCount; i++) {
+        const cloneModule = originalModule.cloneNode(true);
+        const cloneLabel = cloneModule.querySelector("label");
+        const cloneRange = cloneModule.querySelector("input");
+        cloneModule.setAttribute("id", `module${i}`)
+        cloneLabel.setAttribute("for", `pot${i}`)
+        cloneRange.setAttribute("id", `pot${i}`)
+
+        caseDiv.appendChild(cloneModule)
+    }
+}
+
+async function getMidi() {
+    function populateSelect(midiMap, selectID) {
+        const applyButtonID = "#apply"
+
+        const select = document.querySelector(selectID);
+        const applyButton = document.querySelector(applyButtonID)
+
+        if (midiMap.size > 0) {
+            for (const [key, element] of midiMap) {
+                const connectionOption = document.createElement("option");
+                connectionOption.text = element.name;
+                connectionOption.value = key;
+                select.appendChild(connectionOption)
+            }
+        } else {
+            const connectionOption = document.createElement("option");
+            connectionOption.text = "No Devices";
+            select.appendChild(connectionOption)
+            select.disabled = true;
+
+            applyButton.disabled = true;
+        }
+    }
+
+    const inputID = "#midiIn";
+    const outputID = "#midiOut";
 
     const midi = await navigator.requestMIDIAccess();
 
-    for (const [key, input] of midi.inputs) {
-        const connectionOption = document.createElement("option");
-        connectionOption.text = input.name
-        connectionOption.value = key
-        inputSelect.appendChild(connectionOption)
-    }
-
-    for (const [key, output] of midi.outputs) {
-        const connectionOption = document.createElement("option");
-        connectionOption.text = output.name
-        connectionOption.value = key
-        outputSelect.appendChild(connectionOption)
-    }
-
-    if (midi.inputs.size < 1 || midi.outputs.size < 1) {
-        applyButton.disabled = true;
-    }
+    populateSelect(midi.inputs, inputID)
+    populateSelect(midi.outputs, outputID)
 }
 
 async function useMidi() {
-    const midi = await navigator.requestMIDIAccess();
+    function getSelectValue(selectID) {
+        const select = document.querySelector(selectID);
+        const connectionIndex = select.selectedIndex;
+        const connectionValue = select.options[connectionIndex].value;
+        return connectionValue
+    }
 
-    const inputSelect = document.querySelector("#midiIn")
-    const outputSelect = document.querySelector("#midiOut")
+    const midi = await navigator.requestMIDIAccess({ sysex: true });
 
-    // const connectionManager = document.querySelector(".connectionManager")
-    const caseDiv = document.querySelector(".case")
+    const caseDiv = document.querySelector(".case");
 
-    console.log(inputSelect.options[inputSelect.selectedIndex].value)
-    let input = midi.inputs.get(inputSelect.options[inputSelect.selectedIndex].value)
+    let input = midi.inputs.get(getSelectValue("#midiIn"));
+    let output = midi.outputs.get(getSelectValue("#midiOut"));
 
-    console.log(outputSelect.options[outputSelect.selectedIndex].value)
-    let output = midi.outputs.get(outputSelect.options[outputSelect.selectedIndex].value)
+    document.querySelector(".connectionManager").style.display = "none";
+    document.querySelector("hr").style.display = "none";
 
-    // connectionManager.style.display = "none"
-    // document.querySelector("hr").style.display = "none"
-    caseDiv.style.display = "block"
+    caseDiv.style.display = "block";
 
     input.onmidimessage = e => {
-        const noteOnMessage = [0x90, 60, 0x7F]
-        const noteOffMessage = [0x80, 60, 0x00]
+        if (e.data[0] === 0xF0 && e.data[1] === 0x01) {
+            const controllerAddress = e.data[2];
+            const moduleID = `#module${controllerAddress}`;
+            const module = document.querySelector(moduleID);
 
-        if (e.data[0] === 0x90) {
-            output.send(noteOnMessage)
-        }
-        else if (e.data[0] === 0x80) {
-            output.send(noteOffMessage)
+            if (module === null) {
+                console.log(`Controller Address ${controllerAddress} not found:(`)
+                return;
+            }
+
+            const label = module.querySelector("label");
+
+            const messageBytes = e.data.slice(3, -1);
+
+            const endOfStaticLabel = messageBytes.indexOf(0x00);
+            const staticLabelBytes = messageBytes.slice(0, endOfStaticLabel);
+            const staticLabel = String.fromCharCode(...staticLabelBytes);
+            console.log(staticLabel)
+
+            label.innerHTML = staticLabel;
+
+            const startOfDynamicLabel = messageBytes.indexOf(0x00) + 1;
+            const dynamicLabelBytes = messageBytes.slice(startOfDynamicLabel);
+            const dynamicLabel = String.fromCharCode(...dynamicLabelBytes);
+            console.log(dynamicLabel)
         }
     }
 }
 
+window.addEventListener("load", buildController)
 window.addEventListener("load", getMidi)
 document.querySelector("#apply").addEventListener("click", useMidi)
