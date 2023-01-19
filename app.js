@@ -74,6 +74,14 @@ async function useMidi() {  // Adds functionality to the midi controller
 
     input.onmidimessage = e => {  // Callback that handles midi input messages
         function sysexMessage(message) {  // Function that reads sysex messages as a label
+            function changeRange() {
+                const regionCount = 1 + max - min;  // The number of regions in the dynamic label
+                const regionSize = 128 / regionCount;  // The size of each region if they had to share 128 positions
+                const regionsBelow = Math.round(range.value / regionSize);  // The number of regions below the current value of the range
+                const adjustedValue = regionsBelow + min;  // The final calculated value of the dynamic label
+                label.innerHTML = staticLabel + adjustedValue;  // Write the static and dynamic labels to the label object
+            }
+            
             const controllerAddress = e.data[2];  // Extracts the address of the module to be edited from the message
             const moduleID = `#module${controllerAddress}`;  // The id of the module
             const module = document.querySelector(moduleID);  // The module itself
@@ -99,19 +107,9 @@ async function useMidi() {  // Adds functionality to the midi controller
             const min = parseInt(dynamicLabel.slice(0, colonIndex));  // An int from the text before the colon in the dynamic label
             const max = parseInt(dynamicLabel.slice(colonIndex + 1));  // An int from the text after the colon in the dynamic label
 
-            const regionCount = 1 + max - min;  // The number of regions in the dynamic label
-            const regionSize = 128 / regionCount;  // The size of each region if they had to share 128 positions
-            const regionsBelow = Math.round(range.value / regionSize);  // The number of regions below the current value of the range
-            const adjustedValue = regionsBelow + min;  // The final calculated value of the dynamic label
-            label.innerHTML = staticLabel + adjustedValue;  // Write the static and dynamic labels to the label object
+            changeRange()
 
-            range.addEventListener("input", () => {  // An event that calculates the dynamic label and displays it after the static label
-                const regionCount = 1 + max - min;  // The number of regions in the dynamic label
-                const regionSize = 128 / regionCount;  // The size of each region if they had to share 128 positions
-                const regionsBelow = Math.round(range.value / regionSize);  // The number of regions below the current value of the range
-                const adjustedValue = regionsBelow + min;  // The final calculated value of the dynamic label
-                label.innerHTML = staticLabel + adjustedValue;  // Write the static and dynamic labels to the label object
-            })
+            range.addEventListener("input", changeRange)
         }
 
         switch (e.data[0]) {  // Switch-case for handling midi-in events
